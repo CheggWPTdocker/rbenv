@@ -1,61 +1,41 @@
-FROM cheggwpt/alpine:3.5
+FROM gendosu/alpine-ruby:2.2.3
 
-RUN mkdir -p /app
-WORKDIR /app
+MAINTAINER jgilley@chegg.com
 
-ENV PATH /usr/local/rbenv/shims:/usr/local/rbenv/bin:$PATH
-ENV RBENV_ROOT /usr/local/rbenv
-ENV RUBY_VERSION 2.2.3
-ENV CONFIGURE_OPTS --disable-install-doc
-
-RUN apk add --update --no-cache --virtual .ruby-builddeps \
-	autoconf \
-	bison \
-	bzip2 \
-	bzip2-dev \
+RUN	apk --update --no-cache add \
+	bash \
 	ca-certificates \
-	coreutils \
-	gcc \
-	gdbm-dev \
-	glib-dev \
-	imagemagick-dev \
-	libc-dev \
-	libffi-dev \
+	supervisor \
+	qt-dev \
+	nodejs \
+	tzdata \
 	libxml2-dev \
 	libxslt-dev \
-	linux-headers \
-	make \
-	mariadb-dev \
-	mysql-client \
-	ncurses-dev \
-	nodejs \
-	openssl \
-	openssl-dev \
-	procps \
-	qt-dev \
-	qt-webkit \
-	qt5-qtwebkit \
-	readline-dev \
-	ruby \
-	tar \
-	tzdata \
-	xvfb \
-	yaml-dev \
-	zlib-dev \
-	&& \
+	qt5-qtwebkit && \
+	rm -rf /var/cache/apk/* && \
 	update-ca-certificates && \
-	rm -rf /var/cache/apk/*
+	mkdir -p /app
 
-RUN git clone --depth 1 git://github.com/sstephenson/rbenv.git ${RBENV_ROOT} \
-&&  git clone --depth 1 https://github.com/sstephenson/ruby-build.git ${RBENV_ROOT}/plugins/ruby-build \
-&&  git clone --depth 1 git://github.com/jf/rbenv-gemset.git ${RBENV_ROOT}/plugins/rbenv-gemset \
-&&  ${RBENV_ROOT}/plugins/ruby-build/install.sh
+# Add the container config files
+COPY container_confs /
 
-RUN echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh && \
-	echo 'eval "$(rbenv init -)"' >> /root/.bashrc
+# Set the working directory
+WORKDIR /app
 
-RUN rbenv install $RUBY_VERSION \
-	rbenv global $RUBY_VERSION && \
-	bundle config git.allow_insecure true
+# set our environment
+ENV APP_ENV='DEVELOPMENT'
+ENV RUBY_ENV='DEVELOPMENT'
+ENV SERVICE_PORT 9292
+ENV SERVICE_IP 0.0.0.0
 
-RUN gem install bundler
+# create the supervisor run dir
+# make sure that entrypoint and other scripts are executeable
+RUN mkdir -p /run/supervisord && \
+	mv /etc/profile.d/color_prompt /etc/profile.d/color_prompt.sh && \
+	chmod +x /entrypoint.sh /wait-for-it.sh /etc/profile /etc/profile.d/*.sh
+
+# the entry point definition
+ENTRYPOINT ["/entrypoint.sh"]
+
+# default command for entrypoint.sh
+CMD ["supervisor"]

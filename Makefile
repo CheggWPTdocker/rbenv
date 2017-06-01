@@ -11,6 +11,9 @@ build:
 tag_latest:
 	docker tag $(NAME):$(VERSION) $(NAME):latest
 
+run:
+	docker run --name rbenv -d --rm -t $(NAME):$(VERSION)
+
 release: tag_latest
 	@if ! docker images $(NAME) | awk '{ print $$2 }' | grep -q -F $(VERSION); then echo "$(NAME) version $(VERSION) is not yet built. Please run 'make build'"; false; fi
 	docker push $(NAME)

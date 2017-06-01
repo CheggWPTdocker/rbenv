@@ -1,4 +1,4 @@
 # CheggWPT Docker Containers
-## Ruby
+## RBEnv
 
-A basic RUBY container based on Alpine.
+A basic RUBY container based on Alpine starting with RBEnv.

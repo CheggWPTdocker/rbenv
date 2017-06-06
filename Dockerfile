@@ -4,7 +4,9 @@ MAINTAINER jgilley@chegg.com
 
 RUN	apk --update --no-cache add \
 	bash \
+	curl \
 	ca-certificates \
+	openssh \
 	supervisor \
 	qt-dev \
 	nodejs \
@@ -33,6 +35,9 @@ ENV SERVICE_IP 0.0.0.0
 RUN mkdir -p /run/supervisord && \
 	mv /etc/profile.d/color_prompt /etc/profile.d/color_prompt.sh && \
 	chmod +x /entrypoint.sh /wait-for-it.sh /etc/profile /etc/profile.d/*.sh
+
+RUN apk add --no-cache curl && curl -o- -L https://yarnpkg.com/install.sh | sh
+ENV PATH /root/.yarn/bin:$PATH
 
 # the entry point definition
 ENTRYPOINT ["/entrypoint.sh"]
